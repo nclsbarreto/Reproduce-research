@@ -1,20 +1,12 @@
----
-title: 'Reproduce_Research_Week2_Peer_Reviewed_Assignment'
-author: "N.B."
-date: "June 30, 2019"
-output: github_document
----
+Reproduce\_Research\_Week2\_Peer\_Reviewed\_Assignment
+================
+N.B.
+June 30, 2019
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE) 
-library(tidyverse)
-library(psych)
-library(lubridate)
-```
+Question 1: Loading Data and preparing data
+===========================================
 
-# Question 1: Loading Data and preparing data
-
-```{r}
+``` r
 fileurl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
 zipfile <- "./repdata_data_activity.zip" 
 # downloading the file as data.zip to the folder course4week4 under the working
@@ -34,26 +26,36 @@ activity$date <- ymd(activity$date) #set date as a date
 activity$weekend <- as.factor(ifelse(weekdays(activity$date)=="Saturday" | weekdays(activity$date)=="Sunday","weekend","weekday")) # make a weekend vs weekday varible
 ```
 
-# Question 2: Histogram of total steps per day
+Question 2: Histogram of total steps per day
+============================================
 
-```{r, echo=TRUE}
+``` r
 steps_per_day <- activity %>% group_by(date) %>% summarize(day.steps = sum(steps, na.rm = TRUE))
 
 ggplot(steps_per_day) + geom_histogram(aes(x = day.steps), binwidth = 500) + 
     labs(title="Question 2: Hist of total number of steps per day", x = "Steps/Days", y = "Count of days in bins of 500")
 ```
 
-# Question 3: Mean and median of the total steps per day
+![](week_2_project_markdown_files/figure-markdown_github/unnamed-chunk-2-1.png)
 
-```{r, echo=TRUE}
+Question 3: Mean and median of the total steps per day
+======================================================
+
+``` r
 aggs.of.day <-  steps_per_day %>% 
     summarize(average.day = mean(day.steps, na.rm = TRUE), median.day = median(day.steps, na.rm = TRUE))
 aggs.of.day
 ```
 
-# Question 4: Plot of number of steps taken by time (5 minute interval)
+    ## # A tibble: 1 x 2
+    ##   average.day median.day
+    ##         <dbl>      <int>
+    ## 1       9354.      10395
 
-```{r, echo=TRUE}
+Question 4: Plot of number of steps taken by time (5 minute interval)
+=====================================================================
+
+``` r
 avg.interval <-  activity %>% 
     group_by(interval) %>%
     summarize(avg.int = mean(steps, na.rm = TRUE))
@@ -63,16 +65,31 @@ with(avg.interval, qplot(interval, avg.int, geom = "line",
                          main = "average number of steps per interval"))
 ```
 
-# Question 5: Which interval had highest number of steps on average
-```{r, echo=TRUE}
+![](week_2_project_markdown_files/figure-markdown_github/unnamed-chunk-4-1.png)
+
+Question 5: Which interval had highest number of steps on average
+=================================================================
+
+``` r
 avg.interval[which(avg.interval$avg.int == max(avg.interval$avg.int)),]
 ```
 
+    ## # A tibble: 1 x 2
+    ##   interval avg.int
+    ##      <int>   <dbl>
+    ## 1      835    206.
 
-# Question 6: Impute missing data
-```{r, echo = TRUE}
+Question 6: Impute missing data
+===============================
+
+``` r
 table(complete.cases(activity))["FALSE"] # number of rows with a missing value
+```
 
+    ## FALSE 
+    ##  2304
+
+``` r
 # mean imputation number of steps by interval
 activity.impute <- activity %>%
     group_by(interval) %>%
@@ -83,8 +100,14 @@ activity.impute <- activity %>%
 table(complete.cases(activity.impute))
 ```
 
-# Question 7: redo Q1 and 2 using imputed data and compare
-```{r, echo=TRUE}
+    ## 
+    ##  TRUE 
+    ## 17568
+
+Question 7: redo Q1 and 2 using imputed data and compare
+========================================================
+
+``` r
 # redo steps in a day with imputed data
 steps_day.impute <- activity.impute %>% group_by(date) %>% summarize(day.steps = sum(steps, na.rm = TRUE))
 
@@ -92,22 +115,40 @@ steps_day.impute <- activity.impute %>% group_by(date) %>% summarize(day.steps =
 ggplot(steps_day.impute) + 
     geom_histogram(aes(x = day.steps), binwidth = 500) + 
     labs(title="Question 6: Hist of total number of steps/day after imputation", x = "Steps/Days", y = "Count of days in bins of 500")
+```
 
+![](week_2_project_markdown_files/figure-markdown_github/unnamed-chunk-7-1.png)
+
+``` r
 # redo average
 aggs.day.impute <-  steps_day.impute %>% 
     summarize(average.day = mean(day.steps, na.rm = TRUE), median.day = median(day.steps, na.rm = TRUE))
 
 # mean and median pre imputation
 aggs.of.day
+```
+
+    ## # A tibble: 1 x 2
+    ##   average.day median.day
+    ##         <dbl>      <int>
+    ## 1       9354.      10395
+
+``` r
 # mean and median post imputation
 aggs.day.impute
-
 ```
+
+    ## # A tibble: 1 x 2
+    ##   average.day median.day
+    ##         <dbl>      <dbl>
+    ## 1      10766.     10766.
 
 The mean and median both went up, which makes sense, as they are no longer being pulled down by "zeros"
 
-# Question 8: Compare weekend vs weekday activity intervals 
-```{r, echo=TRUE}
+Question 8: Compare weekend vs weekday activity intervals
+=========================================================
+
+``` r
 avg.int.impute <-  activity.impute %>% 
     group_by(interval, weekend) %>%
     summarize(avg.int = mean(steps, na.rm = TRUE))
@@ -117,3 +158,4 @@ with(avg.int.impute, qplot(interval, avg.int, geom = "line", facets = weekend~.,
                            main = "average number of steps per interval by weekday vs weekend"))
 ```
 
+![](week_2_project_markdown_files/figure-markdown_github/unnamed-chunk-8-1.png)
